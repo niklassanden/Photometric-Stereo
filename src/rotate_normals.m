@@ -1,23 +1,27 @@
-function [normal_image, S, L] = rotate_normals(S, L, normal_image, mask, image, plot)
+function [normal_image, S, L] = rotate_normals(S, L, normal_image, mask, images, plot)
     arguments
         S
         L
         normal_image
         mask
-        image
+        images
         plot = false
     end
 
     % Pick z normal
     figure;
-    imshow(image);
-    [x, y] = ginput(1);
+    for i = 1:3
+        subplot(1,3,i)
+        imshow(images{i});
+    end
+    title("Pick point first with normal towards camera then with normal towards right, then downwards")
+    [x, y] = ginput(3);
     close(gcf);
     x = round(x);
     y = round(y);
 
     n = 3;
-    mean_normal = normalize(squeeze(sum(normal_image(y-n:y+n, x-n:x+n, :), [1 2])), "norm");
+    mean_normal = normalize(squeeze(sum(normal_image(y(1)-n:y(1)+n, x(1)-n:x(1)+n, :), [1 2])), "norm");
     if any(isnan(mean_normal))
         error("Pick again!");
     end
@@ -42,17 +46,11 @@ function [normal_image, S, L] = rotate_normals(S, L, normal_image, mask, image, 
 
     % Fix x and y axis
     % ------------------------
-    mask_border = conv2(mask, ones(3), "same");
-    mask_border = (mask_border < 9) & mask;
-    rightmost_column = find(sum(mask_border, 1), 1, "last");
-    sections = bwlabel(mask_border(:, rightmost_column), 4);
-    unique_sections = unique(sections);
-    section_sizes = histc(sections, unique_sections);
-    [~, max_section] = max(section_sizes);
-    component_indices = find(sections == max_section);
-    center = round(mean(component_indices));
+    right_normal = normalize(squeeze(sum(normal_image(y(2)-n:y(2)+n, x(2)-n:x(2)+n, 1:2), [1 2])), "norm");
+    if any(isnan(right_normal))
+        error("Pick again!");
+    end
 
-    right_normal = normalize(reshape(normal_image(center, rightmost_column, 1:2), [2 1]), "norm");
     radians = 0;
     if right_normal(1) < 0
         radians = pi;
@@ -67,6 +65,12 @@ function [normal_image, S, L] = rotate_normals(S, L, normal_image, mask, image, 
     ];
     S = S * R;
     L = R' * L;
+
+    down_normal = squeeze(sum(normal_image(y(3)-n:y(3)+n, x(3)-n:x(3)+n, 1:2), [1 2]));
+    if down_normal(2) < 0
+        S = S * diag([1, -1, 1]);
+        L = diag([1, -1, 1]) * L;
+    end
 
     normal_image = get_normal_image(S, mask);
     if plot

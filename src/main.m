@@ -23,7 +23,7 @@ fprintf("Primitive solution error: %f\n", calculate_relative_SL_error(S_hat, L_h
 
 normal_image = get_normal_image(S, mask);
 
-[normal_image, S, L] = rotate_normals(S, L, normal_image, mask, true);
+[normal_image, S, L] = rotate_normals(S, L, normal_image, mask, images{1}, true);
 
 [depths, grads] = integrate_surface(normal_image, mask);
 

@@ -24,8 +24,9 @@ function [normal_image, S, L] = rotate_normals(S, L, normal_image, mask, image, 
 
     axis = cross([0; 0; 1], mean_normal);
     angle = acos(dot([0; 0; 1], mean_normal));
-    skew = [0 -axis(3) axis(2); axis(3) 0 -axis(1); -axis(2) axis(1) 0];
-    R = eye(3) + skew * sin(angle) + skew^2 * (1 - cos(angle))';
+    skew = [0 -v(3) v(2); v(3) 0 -v(1); -v(2) v(1) 0];
+    R = eye(3) + skew(axis) * sin(angle) + skew(axis)^2 * (1 - cos(angle));
+    R = vrrotvec2mat(vrrotvec(mean_normal, [0; 0; 1]))';
     S = S * R;
     L = R' * L;
 
@@ -42,8 +43,6 @@ function [normal_image, S, L] = rotate_normals(S, L, normal_image, mask, image, 
 
     % Fix x and y axis
     % ------------------------
-    mask_border = conv2(mask, ones(3), "same");
-    mask_border = (mask_border < 9) & mask;
     rightmost_column = find(sum(mask_border, 1), 1, "last");
     sections = bwlabel(mask_border(:, rightmost_column), 4);
     unique_sections = unique(sections);

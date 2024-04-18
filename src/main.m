@@ -16,6 +16,8 @@ end
 
 [S_hat, L_hat] = primitive_solution(I);
 fprintf("Primitive solution error: %f\n", calculate_relative_SL_error(S_hat, L_hat, I));
+%[S_hat, L_hat, illuminated] = shadow_solution(I);
+%fprintf("Shadow solution error: %f\n", calculate_relative_SL_error_inliers(S_hat, L_hat, I, illuminated));
 
 [S, L] = upgrade_constant_albedo(S_hat, L_hat);
 

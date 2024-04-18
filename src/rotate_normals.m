@@ -8,6 +8,8 @@ function [normal_image, S, L] = rotate_normals(S, L, normal_image, mask, images,
         plot = false
     end
 
+    flip_z_for_plot = @(normal_image) normal_image .* reshape([1 1 -1], 1, 1, 3);
+
     % Pick z normal
     figure;
     for i = 1:3
@@ -21,13 +23,19 @@ function [normal_image, S, L] = rotate_normals(S, L, normal_image, mask, images,
     y = round(y);
 
     n = 3;
+    towards_camera = [0; 0; -1];
     mean_normal = normalize(squeeze(sum(normal_image(y(1)-n:y(1)+n, x(1)-n:x(1)+n, :), [1 2])), "norm");
     if any(isnan(mean_normal))
         error("Pick again!");
     end
+    if dot(towards_camera, mean_normal) < 0
+        S = S * diag([1 1 -1]);
+        L = diag([1 1 -1]) * L;
+        mean_normal(3) = -mean_normal(3);
+    end
 
-    axis = cross(mean_normal, [0; 0; 1]);
-    angle = acos(dot(mean_normal, [0; 0; 1]));
+    axis = cross(mean_normal, towards_camera);
+    angle = acos(dot(mean_normal, towards_camera));
     skew = [0 -axis(3) axis(2); axis(3) 0 -axis(1); -axis(2) axis(1) 0];
     R = eye(3) + skew * sin(angle) + skew^2 * (1 - cos(angle));
     S = S * R';
@@ -36,12 +44,12 @@ function [normal_image, S, L] = rotate_normals(S, L, normal_image, mask, images,
     if plot
         figure
         subplot(1, 3, 1)
-        imagesc(normal_image);
+        imagesc(flip_z_for_plot(normal_image));
     end
     normal_image = get_normal_image(S, mask);
     if plot
         subplot(1, 3, 2)
-        imagesc(normal_image)
+        imagesc(flip_z_for_plot(normal_image));
     end
 
     % Fix x and y axis
@@ -51,7 +59,7 @@ function [normal_image, S, L] = rotate_normals(S, L, normal_image, mask, images,
         error("Pick again!");
     end
 
-    radians = atan2(0, 1) - atan2(right_normal(2), right_normal(1));
+    radians = -atan2(right_normal(2), right_normal(1));
     R = [
         cos(radians), -sin(radians), 0
         sin(radians), cos(radians), 0
@@ -70,6 +78,6 @@ function [normal_image, S, L] = rotate_normals(S, L, normal_image, mask, images,
 
     if plot
         subplot(1, 3, 3)
-        imagesc(normal_image)
+        imagesc(flip_z_for_plot(normal_image))
     end
 end

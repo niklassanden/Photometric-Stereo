@@ -1,7 +1,7 @@
 addpath('src')
 addpath('src/utils')
 
-images = load_images("frog", true);
+images = load_images("cat", true);
 sz = size(images{1});
 num_images = length(images);
 
@@ -14,10 +14,10 @@ for i = 1:num_images
     I(:,i) = images{i}(mask);
 end
 
-% [S_hat, L_hat] = primitive_solution(I);
-% fprintf("Primitive solution error: %f\n", calculate_relative_SL_error(S_hat, L_hat, I));
-[S_hat, L_hat, illuminated] = shadow_solution(I);
-fprintf("Shadow solution error: %f\n", calculate_relative_SL_error_inliers(S_hat, L_hat, I, illuminated));
+[S_hat, L_hat] = primitive_solution(I);
+fprintf("Primitive solution error: %f\n", calculate_relative_SL_error(S_hat, L_hat, I));
+%[S_hat, L_hat, illuminated] = shadow_solution(I);
+%fprintf("Shadow solution error: %f\n", calculate_relative_SL_error_inliers(S_hat, L_hat, I, illuminated));
 
 [S, L] = upgrade_constant_albedo(S_hat, L_hat);
 
@@ -33,6 +33,6 @@ imagesc(depths);
 colorbar
 
 figure
-surf(depths(1:2:end, 1:2:end));
+surf(depths(1:3:end, 1:3:end));
 colorbar;
 axis equal;

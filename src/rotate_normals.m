@@ -26,12 +26,12 @@ function [normal_image, S, L] = rotate_normals(S, L, normal_image, mask, images,
         error("Pick again!");
     end
 
-    axis = cross([0; 0; 1], mean_normal);
-    angle = acos(dot([0; 0; 1], mean_normal));
+    axis = cross(mean_normal, [0; 0; 1]);
+    angle = acos(dot(mean_normal, [0; 0; 1]));
     skew = [0 -axis(3) axis(2); axis(3) 0 -axis(1); -axis(2) axis(1) 0];
-    R = eye(3) + skew * sin(angle) + skew^2 * (1 - cos(angle))';
-    S = S * R;
-    L = R' * L;
+    R = eye(3) + skew * sin(angle) + skew^2 * (1 - cos(angle));
+    S = S * R';
+    L = R * L;
 
     if plot
         figure
@@ -51,28 +51,23 @@ function [normal_image, S, L] = rotate_normals(S, L, normal_image, mask, images,
         error("Pick again!");
     end
 
-    radians = 0;
-    if right_normal(1) < 0
-        radians = pi;
-        right_normal = -right_normal;
-    end
-    radians = radians - asin(right_normal(2));
-
+    radians = atan2(0, 1) - atan2(right_normal(2), right_normal(1));
     R = [
-        cos(-radians), -sin(-radians), 0
-        sin(-radians), cos(-radians), 0
+        cos(radians), -sin(radians), 0
+        sin(radians), cos(radians), 0
         0, 0, 1
     ];
-    S = S * R;
-    L = R' * L;
+    S = S * R';
+    L = R * L;
+    normal_image = get_normal_image(S, mask);
 
     down_normal = squeeze(sum(normal_image(y(3)-n:y(3)+n, x(3)-n:x(3)+n, 1:2), [1 2]));
     if down_normal(2) < 0
         S = S * diag([1, -1, 1]);
         L = diag([1, -1, 1]) * L;
+        normal_image = get_normal_image(S, mask);
     end
 
-    normal_image = get_normal_image(S, mask);
     if plot
         subplot(1, 3, 3)
         imagesc(normal_image)

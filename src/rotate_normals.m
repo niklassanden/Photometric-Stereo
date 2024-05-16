@@ -34,9 +34,9 @@ function [normal_image, S, L] = rotate_normals(S, L, normal_image, mask, images,
         mean_normal(3) = -mean_normal(3);
     end
 
-    axis = cross(mean_normal, towards_camera);
+    r_axis = cross(mean_normal, towards_camera);
     angle = acos(dot(mean_normal, towards_camera));
-    skew = [0 -axis(3) axis(2); axis(3) 0 -axis(1); -axis(2) axis(1) 0];
+    skew = [0 -r_axis(3) r_axis(2); r_axis(3) 0 -r_axis(1); -r_axis(2) r_axis(1) 0];
     R = eye(3) + skew * sin(angle) + skew^2 * (1 - cos(angle));
     S = S * R';
     L = R * L;
@@ -45,11 +45,13 @@ function [normal_image, S, L] = rotate_normals(S, L, normal_image, mask, images,
         figure
         subplot(1, 3, 1)
         imagesc(flip_z_for_plot(normal_image));
+        axis equal
     end
     normal_image = get_normal_image(S, mask);
     if plot
         subplot(1, 3, 2)
         imagesc(flip_z_for_plot(normal_image));
+        axis equal
     end
 
     % Fix x and y axis
@@ -78,6 +80,8 @@ function [normal_image, S, L] = rotate_normals(S, L, normal_image, mask, images,
 
     if plot
         subplot(1, 3, 3)
+        axis equal;
         imagesc(flip_z_for_plot(normal_image))
+        axis equal;
     end
 end

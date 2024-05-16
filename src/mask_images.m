@@ -16,9 +16,11 @@ function mask = mask_images(images, plot, threshold)
         subplot(1, 2, 1);
         imagesc(mask);
         colormap gray;
+        axis equal;
 
         subplot(1, 2, 2);
         imagesc(images{1});
         colormap gray;
+        axis equal;
     end
 end
